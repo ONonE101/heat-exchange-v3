@@ -5,34 +5,34 @@ namespace HeatExchange.Web.Models;
 
 public sealed class HeatExchangeInput : IValidatableObject
 {
-    [BindRequired, Range(0.1, 50), Display(Name = "Высота слоя", Description = "м")]
+    [BindRequired, InputRange(0.1, 50), Display(Name = "Высота слоя", Description = "м")]
     public double Height { get; set; } = 5;
 
-    [BindRequired, Range(-100, 2000), Display(Name = "Температура окатышей на входе", Description = "°C")]
+    [BindRequired, InputRange(-100, 2000), Display(Name = "Температура окатышей на входе", Description = "°C")]
     public double MaterialInlet { get; set; } = 700;
 
-    [BindRequired, Range(-100, 2000), Display(Name = "Температура воздуха на входе", Description = "°C")]
+    [BindRequired, InputRange(-100, 2000), Display(Name = "Температура воздуха на входе", Description = "°C")]
     public double GasInlet { get; set; } = 20;
 
-    [BindRequired, Range(0.01, 20), Display(Name = "Скорость воздуха", Description = "м/с")]
+    [BindRequired, InputRange(0.01, 20), Display(Name = "Скорость воздуха", Description = "м/с")]
     public double GasVelocity { get; set; } = 0.78;
 
-    [BindRequired, Range(0.1, 10), Display(Name = "Теплоёмкость воздуха", Description = "кДж/(м³·К)")]
+    [BindRequired, InputRange(0.1, 10), Display(Name = "Теплоёмкость воздуха", Description = "кДж/(м³·К)")]
     public double GasHeatCapacity { get; set; } = 1.32;
 
-    [BindRequired, Range(0.01, 1000), Display(Name = "Расход окатышей", Description = "кг/с")]
+    [BindRequired, InputRange(0.01, 1000), Display(Name = "Расход окатышей", Description = "кг/с")]
     public double MaterialFlow { get; set; } = 1.72;
 
-    [BindRequired, Range(0.1, 10), Display(Name = "Теплоёмкость окатышей", Description = "кДж/(кг·К)")]
+    [BindRequired, InputRange(0.1, 10), Display(Name = "Теплоёмкость окатышей", Description = "кДж/(кг·К)")]
     public double MaterialHeatCapacity { get; set; } = 1.49;
 
-    [BindRequired, Range(1, 100000), Display(Name = "Объёмный коэффициент теплоотдачи", Description = "Вт/(м³·К)")]
+    [BindRequired, InputRange(1, 100000), Display(Name = "Объёмный коэффициент теплоотдачи", Description = "Вт/(м³·К)")]
     public double VolumetricCoefficient { get; set; } = 2460;
 
-    [BindRequired, Range(0.1, 20), Display(Name = "Диаметр аппарата", Description = "м")]
+    [BindRequired, InputRange(0.1, 20), Display(Name = "Диаметр аппарата", Description = "м")]
     public double Diameter { get; set; } = 2.2;
 
-    [BindRequired, Range(10, 500), Display(Name = "Число интервалов")]
+    [BindRequired, InputRange(10, 500), Display(Name = "Число интервалов")]
     public int Intervals { get; set; } = 50;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
