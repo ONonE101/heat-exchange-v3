@@ -1,7 +1,18 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Globalization;
+using HeatExchange.Web.Infrastructure;
+using HeatExchange.Web.Services;
+using Microsoft.AspNetCore.Mvc;
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBinderProviders.Insert(0, new FlexibleDoubleBinderProvider());
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    options.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(_ => "Заполните это поле.");
+    options.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(_ => "Введите число.");
+});
+builder.Services.AddSingleton<HeatExchangeCalculator>();
+builder.Services.AddSingleton<CalculationRepository>();
 
 var app = builder.Build();
 
@@ -13,7 +24,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture("ru-RU").AddSupportedCultures("ru-RU").AddSupportedUICultures("ru-RU"));
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
@@ -22,7 +35,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Calculator}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 

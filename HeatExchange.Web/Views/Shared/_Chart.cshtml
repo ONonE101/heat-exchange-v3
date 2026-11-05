@@ -1,0 +1,29 @@
+@model TemperatureChartModel
+<section class="chart-panel" aria-labelledby="@(Model.Id)-heading">
+    <div class="chart-heading"><h3 id="@(Model.Id)-heading">@Model.Title</h3><div class="chart-legend">@foreach (var s in Model.Series) { <span><i style="background:@s.Color"></i>@s.Name</span> }</div></div>
+    <svg class="temperature-chart" viewBox="0 0 700 270" role="img" aria-labelledby="@(Model.Id)-title @(Model.Id)-desc">
+        <title id="@(Model.Id)-title">@Model.Title</title>
+        <desc id="@(Model.Id)-desc">По горизонтали расстояние от верха слоя в метрах, по вертикали @Model.YLabel. Числа также доступны в таблице результатов.</desc>
+        @for (double tick = Model.YMin; tick <= Model.YMax + Model.TickSize / 10; tick += Model.TickSize)
+        {
+            <g class="grid-tick"><line x1="58" x2="666" y1="@Model.Y(tick)" y2="@Model.Y(tick)" /><text x="48" y="@Model.Y(tick)" text-anchor="end" dominant-baseline="middle">@tick.ToString("0.##")</text></g>
+        }
+        @for (int i = 0; i <= 10; i++)
+        {
+            double tick = Model.XMax * i / 10;
+            <g class="grid-tick"><line x1="@Model.X(tick)" x2="@Model.X(tick)" y1="44" y2="218" /><text x="@Model.X(tick)" y="239" text-anchor="middle">@tick.ToString("0.##")</text></g>
+        }
+        <line class="axis" x1="58" x2="666" y1="218" y2="218" />
+        @foreach (var series in Model.Series)
+        {
+            <g class="data-series"><path d="@Model.Path(series)" fill="none" stroke="@series.Color" stroke-width="2.3" />
+                @foreach (var point in Model.Markers)
+                {
+                    <circle cx="@Model.X(point.Height)" cy="@Model.Y(series.Value(point))" r="3.3" fill="@series.Color"><title>@series.Name: @series.Value(point).ToString("0.000") при y = @point.Height.ToString("0.00") м</title></circle>
+                }
+            </g>
+        }
+        <text class="axis-title" x="362" y="264" text-anchor="middle">Расстояние от верха слоя y, м</text>
+        <text class="axis-title" transform="translate(16 130) rotate(-90)" text-anchor="middle">@Model.YLabel</text>
+    </svg>
+</section>

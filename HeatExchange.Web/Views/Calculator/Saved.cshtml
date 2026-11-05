@@ -1,0 +1,17 @@
+@model IReadOnlyList<SavedCalculation>
+@{ ViewData["Title"] = "Сохранённые варианты"; }
+<div class="page-intro"><p class="eyebrow">Варианты расчёта</p><h1>Сохранённые расчёты</h1><p>Исходные данные и результаты сохраняются на этом компьютере и доступны после перезапуска приложения.</p></div>
+<div class="saved-toolbar"><span>@Model.Count вариантов</span><a class="button primary" asp-action="Index">Новый расчёт <span aria-hidden="true">+</span></a></div>
+@if (Model.Count == 0)
+{
+    <section class="empty-state"><div class="empty-icon" aria-hidden="true">↕</div><h2>Сохранённых расчётов пока нет</h2><p>Выполните расчёт, задайте название и нажмите «Сохранить вариант».</p><a class="button secondary" asp-action="Index">Открыть калькулятор</a></section>
+}
+else
+{
+    <div class="table-panel saved-table"><div class="table-scroll"><table><thead><tr><th scope="col">Название и дата UTC</th><th scope="col">Высота, м</th><th scope="col">Окатыши на выходе, °C</th><th scope="col">Воздух на выходе, °C</th><th scope="col">Действия</th></tr></thead><tbody>
+        @foreach (var item in Model)
+        {
+            <tr><td><a class="saved-name" asp-action="Index" asp-route-load="@item.Id">@item.Name</a><small>@item.CreatedUtc.UtcDateTime.ToString("dd.MM.yyyy HH:mm") UTC</small></td><td>@item.Input.Height.ToString("0.##")</td><td>@item.Result.MaterialOutlet.ToString("0.00")</td><td>@item.Result.GasOutlet.ToString("0.00")</td><td><div class="row-actions"><a asp-action="Index" asp-route-load="@item.Id">Открыть</a><a asp-action="Download" asp-route-id="@item.Id">CSV</a><form asp-action="Delete" asp-route-id="@item.Id" method="post" data-confirm="Удалить этот сохранённый расчёт?"><button class="delete-button" type="submit">Удалить</button></form></div></td></tr>
+        }
+    </tbody></table></div></div>
+}

@@ -1,0 +1,51 @@
+@model CalculatorPageModel
+@{ ViewData["Title"] = "Расчёт в противотоке"; }
+<div class="page-intro"><p class="eyebrow">Модель с распределёнными параметрами</p><h1>Теплообмен в противотоке</h1><p>Температурное поле окатышей и воздуха в плотном продуваемом слое.</p></div>
+@if (Model.Notice is not null) { <div class="notice" role="status">@Model.Notice</div> }
+<div class="calculator-layout">
+    <aside class="input-panel">
+        <div class="panel-title"><h2>Исходные данные</h2><a asp-action="Index">Вариант 3 ↺</a></div>
+        <form asp-action="Calculate" method="post" class="input-form">
+            <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+            <fieldset><legend>Слой и температуры</legend><div class="fields-grid">
+                <div class="field"><label asp-for="Input.Height">Высота слоя <span>м</span></label><input asp-for="Input.Height" type="text" inputmode="decimal" required /><span asp-validation-for="Input.Height"></span></div>
+                <div class="field"><label asp-for="Input.Diameter">Диаметр аппарата <span>м</span></label><input asp-for="Input.Diameter" type="text" inputmode="decimal" required /><span asp-validation-for="Input.Diameter"></span></div>
+                <div class="field"><label asp-for="Input.MaterialInlet">Окатыши на входе <span>°C</span></label><input asp-for="Input.MaterialInlet" type="text" inputmode="decimal" required /><span asp-validation-for="Input.MaterialInlet"></span></div>
+                <div class="field"><label asp-for="Input.GasInlet">Воздух на входе <span>°C</span></label><input asp-for="Input.GasInlet" type="text" inputmode="decimal" required /><span asp-validation-for="Input.GasInlet"></span></div>
+            </div></fieldset>
+            <fieldset><legend>Потоки и свойства</legend><div class="fields-grid">
+                <div class="field"><label asp-for="Input.GasVelocity">Скорость воздуха <span>м/с</span></label><input asp-for="Input.GasVelocity" type="text" inputmode="decimal" required /><span asp-validation-for="Input.GasVelocity"></span></div>
+                <div class="field"><label asp-for="Input.MaterialFlow">Расход окатышей <span>кг/с</span></label><input asp-for="Input.MaterialFlow" type="text" inputmode="decimal" required /><span asp-validation-for="Input.MaterialFlow"></span></div>
+                <div class="field"><label asp-for="Input.GasHeatCapacity">Теплоёмкость воздуха <span>кДж/(м³·К)</span></label><input asp-for="Input.GasHeatCapacity" type="text" inputmode="decimal" required /><span asp-validation-for="Input.GasHeatCapacity"></span></div>
+                <div class="field"><label asp-for="Input.MaterialHeatCapacity">Теплоёмкость окатышей <span>кДж/(кг·К)</span></label><input asp-for="Input.MaterialHeatCapacity" type="text" inputmode="decimal" required /><span asp-validation-for="Input.MaterialHeatCapacity"></span></div>
+            </div></fieldset>
+            <fieldset><legend>Теплоотдача и расчётная сетка</legend><div class="fields-grid">
+                <div class="field"><label asp-for="Input.VolumetricCoefficient">Коэффициент αᵥ <span>Вт/(м³·К)</span></label><input asp-for="Input.VolumetricCoefficient" type="text" inputmode="decimal" required /><span asp-validation-for="Input.VolumetricCoefficient"></span></div>
+                <div class="field"><label asp-for="Input.Intervals">Число интервалов <span>10–500</span></label><input asp-for="Input.Intervals" type="number" min="10" max="500" required /><span asp-validation-for="Input.Intervals"></span></div>
+            </div></fieldset>
+            <button class="button primary calculate-button" type="submit">Рассчитать <span aria-hidden="true">→</span></button>
+            <div class="save-area"><label asp-for="Name">Название варианта</label><input asp-for="Name" maxlength="80" placeholder="Например, Вариант 3 — базовый" /><span asp-validation-for="Name"></span><div class="secondary-actions"><button class="button secondary" type="submit" asp-action="Save">Сохранить вариант</button><button class="button text-button" type="submit" asp-action="Export">CSV ↓</button></div></div>
+        </form>
+        <p class="input-hint">Принимаются точка и запятая. Новое сохранение создаёт отдельный вариант.</p>
+    </aside>
+    <div class="results-area">
+        @if (Model.Result is { } r)
+        {
+            <div class="results-title"><h2>Результаты расчёта</h2><span class="subtle">@r.Points.Count точек · шаг @((Model.Input.Height / Model.Input.Intervals).ToString("0.###")) м</span></div>
+            <div class="metrics">
+                <div class="metric"><span>Окатыши на выходе</span><strong id="material-outlet">@r.MaterialOutlet.ToString("0.00") <small>°C</small></strong><span>из @Model.Input.MaterialInlet.ToString("0.##") °C</span></div>
+                <div class="metric"><span>Воздух на выходе</span><strong id="gas-outlet">@r.GasOutlet.ToString("0.00") <small>°C</small></strong><span>из @Model.Input.GasInlet.ToString("0.##") °C</span></div>
+                <div class="metric"><span>Тепловая мощность</span><strong id="heat-power">@((r.HeatPower / 1000).ToString("0.00")) <small>кВт</small></strong><span>от окатышей к воздуху</span></div>
+            </div>
+            <p class="coordinate-note"><b>y = 0</b> — верх слоя, вход окатышей. <b>y = H</b> — низ слоя, вход воздуха. Окатыши ↓, воздух ↑.</p>
+            <partial name="_Chart" model='new TemperatureChartModel { Result = r, Id = "temperatures", Title = "Температуры по высоте слоя", YLabel = "Температура, °C" }' />
+            <partial name="_Chart" model='new TemperatureChartModel { Result = r, Id = "difference", Title = "Разность температур окатышей и воздуха", YLabel = "Разность t − T, К", IsDifference = true }' />
+            <details class="model-details"><summary>Расчётные величины и модель</summary><dl><div><dt>Площадь сечения S</dt><dd>@r.Area.ToString("0.000000") м²</dd></div><div><dt>Расход воздуха Vг</dt><dd>@r.GasVolumeFlow.ToString("0.000000") м³/с</dd></div><div><dt>Теплоёмкость потока Wм</dt><dd>@r.MaterialCapacityFlow.ToString("0.000") Вт/К</dd></div><div><dt>Теплоёмкость потока Wг</dt><dd>@r.GasCapacityFlow.ToString("0.000") Вт/К</dd></div><div><dt>Отношение m = Wм / Wг</dt><dd>@r.CapacityRatio.ToString("0.000000")</dd></div><div><dt>Относительная высота Y(H)</dt><dd>@r.RelativeHeight.ToString("0.000000")</dd></div><div><dt>Эффективность теплообменника ε</dt><dd>@r.Effectiveness.ToString("0.0000%")</dd></div><div><dt>Невязка теплового баланса</dt><dd>@r.BalanceResidual.ToString("0.000000") Вт</dd></div></dl><p>Стационарный одномерный теплообмен; окатыши термически тонкие, свойства постоянны, теплопотери отсутствуют. Граничные условия: t(0) = t₀, T(H) = Tᵢₙ. Положительная мощность означает охлаждение окатышей, отрицательная — нагрев.</p></details>
+            <section class="table-panel"><div class="panel-title"><h2>Температурное поле</h2><span class="subtle">Все расчётные точки</span></div><div class="table-scroll"><table id="temperature-table"><thead><tr><th scope="col">y от верха, м</th><th scope="col">Окатыши t, °C</th><th scope="col">Воздух T, °C</th><th scope="col">Разность t − T, К</th></tr></thead><tbody>@foreach (var point in r.Points) { <tr><td>@point.Height.ToString("0.000")</td><td>@point.Material.ToString("0.000")</td><td>@point.Gas.ToString("0.000")</td><td>@point.Difference.ToString("0.000")</td></tr> }</tbody></table></div></section>
+        }
+        else
+        {
+            <div class="empty-state"><h2>Проверьте исходные данные</h2><p>Исправьте отмеченные значения и снова нажмите «Рассчитать».</p></div>
+        }
+    </div>
+</div>
