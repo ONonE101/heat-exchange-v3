@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/App_Data/
+**/.vs/
+**/wwwroot/lib/
+*.user
+*.suo
+*.log
+TestResults/
+artifacts/
+.env
+*.zip
+*.docx
