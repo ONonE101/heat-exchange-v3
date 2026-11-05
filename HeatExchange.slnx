@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="HeatExchange.Tests/HeatExchange.Tests.csproj" />
+  <Project Path="HeatExchange.Web/HeatExchange.Web.csproj" />
+</Solution>
